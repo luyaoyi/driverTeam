@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>真车主组队完单活动 - 营销管理后台</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">M</span><span>营销活动管理平台</span></div>
+      <div class="top-actions"><span class="environment">测试环境</span><span class="user-dot">运</span><span>运营管理员</span><span class="chevron">⌄</span></div>
+    </header>
+    <div class="workspace">
+      <aside class="sidebar">
+        <div class="nav-section">营销活动</div>
+        <button id="navGroup" class="nav-item active" aria-expanded="true"><span>♧</span><span>真车主组队完单活动</span><span id="navGroupArrow" class="nav-arrow">⌄</span></button>
+        <div id="navGroupChildren" class="subnav">
+          <button id="navConfig" class="subnav-item active" data-page="list">组队完单活动配置</button>
+          <button id="navData" class="subnav-item" data-page="data">组队完单数据报表</button>
+        </div>
+      </aside>
+      <main id="main" class="main"></main>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <div id="modalRoot"></div>
+  <script src="app.js"></script>
+</body>
+</html>
