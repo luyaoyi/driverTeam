@@ -112,13 +112,13 @@ function renderEdit() {
     ruleDescription: x.ruleDescription ?? (state.editing ? "1. 两位司机组队成功后开始累计符合条件的订单。\n2. 双方均至少完成1单后，按团队总完单量发放最高满足阶梯的奖励。\n3. 组队成功后不支持退出、解散或更换队友。" : ""),
     shareTitle: x.shareTitle ?? (state.editing ? "邀你参加真车主组队完单活动" : ""),
     shareSubtitle: x.shareSubtitle ?? "",
-    miniShareImage: x.miniShareImage ?? "",
-    h5ShareImage: x.h5ShareImage ?? "",
+    shareImage: x.shareImage ?? x.miniShareImage ?? "",
   };
+  const messagePushNodes = Array.isArray(x.messagePushNodes) ? x.messagePushNodes : (state.editing ? ["team_success"] : []);
   const ro = state.readonly ? "disabled" : "";
   main.innerHTML = `
     <div class="breadcrumb"><a id="backList">真车主组队完单活动</a><i>›</i><a id="backList2">活动配置</a><i>›</i><span>${state.readonly ? "查看" : state.editing ? "编辑" : "新建"}</span></div>
-    <div class="page-header"><div><h1>${state.readonly ? "查看组队完单活动" : state.editing ? "编辑组队完单活动" : "新建组队完单活动"}</h1><p>配置组队、订单累计、阶梯奖励及前端规则</p></div><span class="tag ${x.status ? "tag-success" : "tag-info"}">${x.status ? "有效" : "无效"}</span></div>
+    <div class="page-header"><div><h1>${state.readonly ? "查看组队完单活动" : state.editing ? "编辑组队完单活动" : "新建组队完单活动"}</h1><p>配置组队、订单累计、阶梯奖励、前端样式及消息推送</p></div><span class="tag ${x.status ? "tag-success" : "tag-info"}">${x.status ? "有效" : "无效"}</span></div>
     <form id="editForm">
       ${card("一、基础信息", `
         <div class="edit-grid">
@@ -154,8 +154,11 @@ function renderEdit() {
           ${item("规则说明", `<textarea id="ruleDescription" class="multiline-input tall" placeholder="请输入活动规则说明" ${ro}>${frontStyle.ruleDescription}</textarea><div class="error-text">请输入规则说明</div>`, true, "ruleItem", "full")}
           ${item("分享主标题", `<input id="shareTitle" value="${frontStyle.shareTitle}" placeholder="请输入分享主标题" ${ro}/><div class="error-text">请输入分享主标题</div>`, true, "shareTitleItem")}
           ${item("分享副标题", `<input id="shareSubtitle" value="${frontStyle.shareSubtitle}" placeholder="请输入分享副标题" ${ro}/>`)}
-          ${item("小程序分享图", imageUpload("miniShareImage", frontStyle.miniShareImage, ro))}
-          ${item("H5分享图", imageUpload("h5ShareImage", frontStyle.h5ShareImage, ro))}
+          ${item("分享图", imageUpload("shareImage", frontStyle.shareImage, ro))}
+        </div>`)}
+      ${card("六、消息推送", `
+        <div class="edit-grid">
+          ${item("消息推送节点", `<div class="radio-row"><label><input id="pushTeamSuccess" type="checkbox" value="team_success" ${messagePushNodes.includes("team_success") ? "checked" : ""} ${ro}> 组队成功</label></div><div class="helper">支持多选；不选择则不配置消息推送</div>`, false, "", "full")}
         </div>`)}
       <div class="form-footer">${state.readonly ? "" : `<button type="button" class="btn btn-primary solid" id="saveBtn">✓ 确定</button>`}<button type="button" class="btn" id="closeBtn">× 关闭</button></div>
     </form>`;
@@ -268,8 +271,8 @@ function saveActivity() {
   const activitySubtitle = document.querySelector("#activitySubtitle").value.trim();
   const shareTitle = document.querySelector("#shareTitle").value.trim();
   const shareSubtitle = document.querySelector("#shareSubtitle").value.trim();
-  const miniShareImage = document.querySelector("#miniShareImage").value.trim();
-  const h5ShareImage = document.querySelector("#h5ShareImage").value.trim();
+  const shareImage = document.querySelector("#shareImage").value.trim();
+  const messagePushNodes = document.querySelector("#pushTeamSuccess").checked ? ["team_success"] : [];
   const matchDuration = Number(document.querySelector("#matchDuration").value);
   const rateDiff = Number(document.querySelector("#rateDiff").value);
   const minMileage = Number(document.querySelector("#minMileage").value);
@@ -301,7 +304,7 @@ function saveActivity() {
   if (state.tiers.some(t => t.mode === "unified" ? (!t.commonPrizeType || !t.commonName.trim() || !t.commonCode.trim()) : (!t.memberPrizeType || !t.memberName.trim() || !t.memberCode.trim() || !t.normalPrizeType || !t.normalName.trim() || !t.normalCode.trim()))) { toast("请完整填写各阶梯的奖品类型、奖励名称和奖励领取Code", true); valid = false; }
   if (overlappingActivity) { toast(`活动时间与有效活动“${overlappingActivity.name}”（${overlappingActivity.code}）存在交集`, true); }
   if (!valid) return;
-  const frontStyleConfig = { prizeValue, headerImage, unmatchedBackgroundImage, matchedBackgroundImage, activitySubtitle, ruleDescription:rule, shareTitle, shareSubtitle, miniShareImage, h5ShareImage };
+  const frontStyleConfig = { prizeValue, headerImage, unmatchedBackgroundImage, matchedBackgroundImage, activitySubtitle, ruleDescription:rule, shareTitle, shareSubtitle, shareImage, messagePushNodes };
   if (state.editing) {
     Object.assign(state.editing, { name, begin, end, status, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
   } else {
