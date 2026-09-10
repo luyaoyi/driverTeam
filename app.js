@@ -111,7 +111,7 @@ function renderEdit() {
     appHomeHeaderImage: x.appHomeHeaderImage ?? (state.editing ? "https://example.com/app-home-header.png" : ""),
     miniProgramHomeHeaderImage: x.miniProgramHomeHeaderImage ?? (state.editing ? "https://example.com/mini-program-home-header.png" : ""),
     homePopupImage: x.homePopupImage ?? (state.editing ? "https://example.com/home-popup.png" : ""),
-    orderDetailPageImage: x.orderDetailPageImage ?? (state.editing ? "https://example.com/order-detail-page.png" : ""),
+    orderDetailBannerImage: x.orderDetailBannerImage ?? x.orderDetailPageImage ?? (state.editing ? "https://example.com/order-detail-banner.png" : ""),
     activitySubtitle: x.activitySubtitle ?? (state.editing ? "邀请好友组队完单，携手赢取阶梯奖励" : ""),
     ruleDescription: x.ruleDescription ?? (state.editing ? "1. 两位司机组队成功后开始累计符合条件的订单。\n2. 双方均至少完成1单后，按团队总完单量发放最高满足阶梯的奖励。\n3. 组队成功后不支持退出、解散或更换队友。" : ""),
     shareTitle: x.shareTitle ?? (state.editing ? "邀你参加真车主组队完单活动" : ""),
@@ -157,7 +157,7 @@ function renderEdit() {
           ${item("首页头图-APP", `${imageUpload("appHomeHeaderImage", frontStyle.appHomeHeaderImage, ro)}<div class="error-text">请上传首页头图-APP</div>`, true, "appHomeHeaderImageItem")}
           ${item("首页头图-小程序", `${imageUpload("miniProgramHomeHeaderImage", frontStyle.miniProgramHomeHeaderImage, ro)}<div class="error-text">请上传首页头图-小程序</div>`, true, "miniProgramHomeHeaderImageItem")}
           ${item("首页弹窗", `${imageUpload("homePopupImage", frontStyle.homePopupImage, ro)}<div class="error-text">请上传首页弹窗图片</div>`, true, "homePopupImageItem")}
-          ${item("订单详情页", `${imageUpload("orderDetailPageImage", frontStyle.orderDetailPageImage, ro)}<div class="error-text">请上传订单详情页图片</div>`, true, "orderDetailPageImageItem")}
+          ${item("订单详情页 Banner", `${imageUpload("orderDetailBannerImage", frontStyle.orderDetailBannerImage, ro)}<div class="error-text">请上传订单详情页 Banner</div>`, true, "orderDetailBannerImageItem")}
           ${item("活动副标题", `<textarea id="activitySubtitle" class="multiline-input" placeholder="请输入活动副标题" ${ro}>${frontStyle.activitySubtitle}</textarea><div class="error-text">请输入活动副标题</div>`, true, "activitySubtitleItem", "full")}
           ${item("规则说明", `<textarea id="ruleDescription" class="multiline-input tall" placeholder="请输入活动规则说明" ${ro}>${frontStyle.ruleDescription}</textarea><div class="error-text">请输入规则说明</div>`, true, "ruleItem", "full")}
           ${item("分享主标题", `<input id="shareTitle" value="${frontStyle.shareTitle}" placeholder="请输入分享主标题" ${ro}/><div class="error-text">请输入分享主标题</div>`, true, "shareTitleItem")}
@@ -279,7 +279,7 @@ function saveActivity() {
   const appHomeHeaderImage = document.querySelector("#appHomeHeaderImage").value.trim();
   const miniProgramHomeHeaderImage = document.querySelector("#miniProgramHomeHeaderImage").value.trim();
   const homePopupImage = document.querySelector("#homePopupImage").value.trim();
-  const orderDetailPageImage = document.querySelector("#orderDetailPageImage").value.trim();
+  const orderDetailBannerImage = document.querySelector("#orderDetailBannerImage").value.trim();
   const activitySubtitle = document.querySelector("#activitySubtitle").value.trim();
   const shareTitle = document.querySelector("#shareTitle").value.trim();
   const shareSubtitle = document.querySelector("#shareSubtitle").value.trim();
@@ -309,7 +309,7 @@ function saveActivity() {
   if (!appHomeHeaderImage) { document.querySelector("#appHomeHeaderImageItem").classList.add("has-error"); valid = false; }
   if (!miniProgramHomeHeaderImage) { document.querySelector("#miniProgramHomeHeaderImageItem").classList.add("has-error"); valid = false; }
   if (!homePopupImage) { document.querySelector("#homePopupImageItem").classList.add("has-error"); valid = false; }
-  if (!orderDetailPageImage) { document.querySelector("#orderDetailPageImageItem").classList.add("has-error"); valid = false; }
+  if (!orderDetailBannerImage) { document.querySelector("#orderDetailBannerImageItem").classList.add("has-error"); valid = false; }
   if (!activitySubtitle) { document.querySelector("#activitySubtitleItem").classList.add("has-error"); valid = false; }
   if (!shareTitle) { document.querySelector("#shareTitleItem").classList.add("has-error"); valid = false; }
   if (!Number.isInteger(matchDuration) || matchDuration < 1 || matchDuration > 60) { document.querySelector("#matchDurationItem").classList.add("has-error"); valid = false; }
@@ -320,7 +320,7 @@ function saveActivity() {
   if (state.tiers.some(t => t.mode === "unified" ? (!t.commonPrizeType || !t.commonName.trim() || !t.commonCode.trim()) : (!t.memberPrizeType || !t.memberName.trim() || !t.memberCode.trim() || !t.normalPrizeType || !t.normalName.trim() || !t.normalCode.trim()))) { toast("请完整填写各阶梯的奖品类型、奖励名称和奖励领取Code", true); valid = false; }
   if (overlappingActivity) { toast(`活动时间与有效活动“${overlappingActivity.name}”（${overlappingActivity.code}）存在交集`, true); }
   if (!valid) return;
-  const frontStyleConfig = { prizeValue, headerImage, unmatchedBackgroundImage, matchedBackgroundImage, appHomeHeaderImage, miniProgramHomeHeaderImage, homePopupImage, orderDetailPageImage, activitySubtitle, ruleDescription:rule, shareTitle, shareSubtitle, shareImage, messagePushNodes };
+  const frontStyleConfig = { prizeValue, headerImage, unmatchedBackgroundImage, matchedBackgroundImage, appHomeHeaderImage, miniProgramHomeHeaderImage, homePopupImage, orderDetailBannerImage, activitySubtitle, ruleDescription:rule, shareTitle, shareSubtitle, shareImage, messagePushNodes };
   if (state.editing) {
     Object.assign(state.editing, { name, begin, end, status, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
   } else {
