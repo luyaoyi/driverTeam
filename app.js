@@ -92,11 +92,14 @@ function openEdit(code, readonly) {
   state.editing = code ? state.activities.find(x => x.code === code) : null;
   state.readonly = readonly;
   state.mileageEnabled = Boolean(code);
-  state.tiers = code ? [
+  const defaultSavedTiers = [
     { threshold:3, mode:"unified", commonPrizeType:"bonus", commonName:"3单达标奖励", commonCode:"PRIZE-DUO-3", commonImage:"https://example.com/prize-3.png", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" },
     { threshold:5, mode:"member", commonPrizeType:"", commonName:"", commonCode:"", commonImage:"", memberPrizeType:"membership", memberName:"会员5单奖励", memberCode:"PRIZE-M-5", memberImage:"https://example.com/member-prize-5.png", normalPrizeType:"bonus", normalName:"非会员5单奖励", normalCode:"PRIZE-N-5", normalImage:"https://example.com/normal-prize-5.png" },
     { threshold:7, mode:"unified", commonPrizeType:"bonus", commonName:"7单达标奖励", commonCode:"PRIZE-DUO-7", commonImage:"https://example.com/prize-7.png", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" },
-  ] : [{ threshold:3, mode:"unified", commonPrizeType:"", commonName:"", commonCode:"", commonImage:"", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" }];
+  ];
+  state.tiers = code
+    ? (Array.isArray(state.editing?.tiers) ? state.editing.tiers.map(tier => ({ ...tier })) : defaultSavedTiers)
+    : [{ threshold:3, mode:"unified", commonPrizeType:"", commonName:"", commonCode:"", commonImage:"", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" }];
   state.page = "edit";
   render();
 }
@@ -146,8 +149,9 @@ function renderEdit() {
         </div>`)}
       ${card("四、阶梯奖励配置", `
         <div style="margin-bottom:14px;color:#606266">双方均至少完成 1 单后，发放当前最高满足阶梯；此前跳过的低阶奖励不补发。每个阶梯向 A、B 各发放一份非现金奖励。</div>
+        ${state.editing ? `<div class="module-tip" style="margin-bottom:14px">ⓘ 活动保存后，阶梯数量及各阶梯团队总完单量不可修改；奖励内容仍可编辑。</div>` : ""}
         <div id="tiers"></div>
-        ${state.readonly ? "" : `<button type="button" class="btn btn-primary" id="addTier">＋ 添加阶梯</button>`}`)}
+        ${state.readonly || state.editing ? "" : `<button type="button" class="btn btn-primary" id="addTier">＋ 添加阶梯</button>`}`)}
       ${card("五、前端样式", `
         <div class="edit-grid">
           ${item("奖品价值", `<div class="inline-control"><input id="prizeValue" class="input-short" type="number" min="1" max="9999" step="0.01" value="${frontStyle.prizeValue}" placeholder="请输入奖品价值" ${ro}/><span>元</span></div><div class="error-text">请输入 1～9999 范围内的奖品价值</div>`, true, "prizeValueItem")}
@@ -179,7 +183,7 @@ function renderEdit() {
       state.mileageEnabled = event.target.checked;
       mileageItem.style.display = state.mileageEnabled ? "grid" : "none";
     };
-    document.querySelector("#addTier").onclick = () => { state.tiers.push({ threshold:"", mode:"unified", commonPrizeType:"", commonName:"", commonCode:"", commonImage:"", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" }); renderTiers(); };
+    if (!state.editing) document.querySelector("#addTier").onclick = () => { state.tiers.push({ threshold:"", mode:"unified", commonPrizeType:"", commonName:"", commonCode:"", commonImage:"", memberPrizeType:"", memberName:"", memberCode:"", memberImage:"", normalPrizeType:"", normalName:"", normalCode:"", normalImage:"" }); renderTiers(); };
     document.querySelector("#saveBtn").onclick = saveActivity;
   }
 }
@@ -223,11 +227,13 @@ function bindImageUploads() {
 function renderTiers() {
   const host = document.querySelector("#tiers");
   const ro = state.readonly ? "disabled" : "";
+  const structureLocked = Boolean(state.editing);
+  const thresholdDisabled = state.readonly || structureLocked ? "disabled" : "";
   host.innerHTML = state.tiers.map((t,i) => `
     <div class="tier" data-tier="${i}">
-      <div class="tier-head"><div><span class="tier-index">${i+1}</span>阶梯 ${i+1}</div><div class="tier-actions">${!state.readonly && i > 0 ? `<button type="button" class="btn btn-text" data-copy-tier="${i}">复制上一阶梯奖励配置</button>` : ""}${!state.readonly && state.tiers.length > 1 ? `<button type="button" class="btn btn-text danger" data-remove="${i}">删除</button>` : ""}</div></div>
+      <div class="tier-head"><div><span class="tier-index">${i+1}</span>阶梯 ${i+1}</div><div class="tier-actions">${!state.readonly && i > 0 ? `<button type="button" class="btn btn-text" data-copy-tier="${i}">复制上一阶梯奖励配置</button>` : ""}${!state.readonly && !structureLocked && state.tiers.length > 1 ? `<button type="button" class="btn btn-text danger" data-remove="${i}">删除</button>` : ""}</div></div>
       <div class="tier-body">
-        <div class="tier-row"><div class="edit-label required">团队总完单量</div><div class="control"><div style="display:flex;align-items:center;gap:8px"><input data-field="threshold" type="number" min="1" value="${t.threshold}" ${ro}><span>单</span></div></div></div>
+        <div class="tier-row"><div class="edit-label required">团队总完单量</div><div class="control"><div style="display:flex;align-items:center;gap:8px"><input data-field="threshold" type="number" min="1" value="${t.threshold}" ${thresholdDisabled}><span>单</span></div>${structureLocked ? `<div class="helper">活动保存后不可修改</div>` : ""}</div></div>
         <div class="tier-row"><div class="edit-label required">奖励配置方式</div><div class="control">${radios(`mode${i}`, [["unified","统一奖励"],["member","区分会员/非会员"]], t.mode, ro)}</div></div>
         ${t.mode === "unified" ? `
           <div class="reward-subgrid"><div class="reward-group-title">统一奖励（A、B 各发放一份）</div>
@@ -321,10 +327,11 @@ function saveActivity() {
   if (overlappingActivity) { toast(`活动时间与有效活动“${overlappingActivity.name}”（${overlappingActivity.code}）存在交集`, true); }
   if (!valid) return;
   const frontStyleConfig = { prizeValue, headerImage, unmatchedBackgroundImage, matchedBackgroundImage, appHomeHeaderImage, miniProgramHomeHeaderImage, homePopupImage, orderDetailBannerImage, activitySubtitle, ruleDescription:rule, shareTitle, shareSubtitle, shareImage, messagePushNodes };
+  const tierConfig = state.tiers.map(tier => ({ ...tier }));
   if (state.editing) {
-    Object.assign(state.editing, { name, begin, end, status, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
+    Object.assign(state.editing, { name, begin, end, status, tiers:tierConfig, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
   } else {
-    state.activities.unshift({ code:`DUO-202609-${String(state.activities.length+3).padStart(3,"0")}`, name, begin, end, status, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
+    state.activities.unshift({ code:`DUO-202609-${String(state.activities.length+3).padStart(3,"0")}`, name, begin, end, status, tiers:tierConfig, ...frontStyleConfig, modified:nowText(), modifier:"当前用户" });
   }
   toast("保存成功");
   setTimeout(() => navigate("list"), 550);
